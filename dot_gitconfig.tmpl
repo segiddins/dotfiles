@@ -58,7 +58,7 @@
 [init]
 	defaultBranch = main
 [alias]
-  co = commit
+  co = checkout
 	d = diff
 	oops = "!git commit --all --amend --no-edit"
 	pr  = "!f() { git fetch -fu ${2:-origin} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
