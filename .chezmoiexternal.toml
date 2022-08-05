@@ -32,6 +32,10 @@
   type = "file"
   url = "https://raw.githubusercontent.com/tpope/vim-pathogen/master/autoload/pathogen.vim"
   refreshPeriod = "168h"
+[".vim/colors/made-of-code.vim"]
+  type = "file"
+  url = "https://raw.githubusercontent.com/indirect/dotfiles/main/dot_vim/colors/made-of-code.vim"
+  refreshPeriod = "168h"
 [".vim/pack/alker0/chezmoi.vim"]
   type = "git-repo"
   url = "https://github.com/alker0/chezmoi.vim.git"
