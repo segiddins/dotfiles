@@ -1,0 +1,66 @@
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[user]
+	email = {{ .email }}
+	name = {{ .name }}
+[credential "https://github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/opt/homebrew/bin/gh auth git-credential
+[push]
+	autoSetupRemote = true
+[branch]
+	autosetupmerge = true
+[color]
+	branch = auto
+	diff = auto
+	status = auto
+	ui = auto
+[core]
+	legacyheaders = false
+	excludesfile = ~/.gitignore
+	pager = delta
+	attributesfile = ~/.gitattributes
+[rerere]
+	enabled = true
+[diff]
+	algorithm = patience
+	colorMoved = default
+[rebase]
+	autoStash = true
+[credential]
+	helper = /usr/local/share/gcm-core/git-credential-manager-core
+[merge "npm-merge-driver"]
+	name = automatically merge npm lockfiles
+	driver = npx npm-merge-driver merge %A %O %B %P
+[merge "yarn-merge-driver"]
+        name = automatically merge yarn lockfiles
+        driver = npx npm-merge-driver merge %A %O %B %P -c yarn
+[merge "bundler-merge-driver"]
+	name = automatically merge bundler lockfiles
+	driver = npx npm-merge-driver merge %A %O %B %P -c 'bundle install'
+[merge "schema-merge-driver"]
+	name = automatically merge Rails schema files
+	driver = npx npm-merge-driver merge %A %O %B %P -c 'bin/rake db:migrate'
+[diff "rust"]
+	xfuncname = "^[ \t]*(pub|)[ \t]*((fn|struct|enum|impl|trait|mod)[^;]*)$"
+[diff "rspec"]
+	xfuncname = "^[ \t]*((RSpec|describe|context|it|before|after|around|feature|scenario|background)[ \t].*)$"
+[diff "plist"]
+	textconv = plutil -convert xml1 -o -
+[diff "age"]
+	textconv = chezmoi decrypt
+[init]
+	defaultBranch = main
+[alias]
+  co = commit
+	d = diff
+	oops = "!git commit --all --amend --no-edit"
+	pr  = "!f() { git fetch -fu ${2:-origin} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
+  sha = log -1 --pretty=format:%H
+	uncommit = reset --soft HEAD^

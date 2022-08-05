@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+set -vx
+echo "moving dotfiles for chezmoi..."
+
+# relocate the checkout to the usual ~/Development/github.com/segiddins/dotfiles location
+[[ -d ~/Development/github.com/segiddins ]] || mkdir -p ~/Development/github.com/segiddins
+[[ -d ~/Development/github.com/segiddins/dotfiles ]] || mv ~/.dotfiles ~/Development/github.com/segiddins/dotfiles
+
+# link the conventional .dotfiles location
+[[ -L ~/.dotfiles ]] || ln -sf ~/Development/github.com/segiddins/dotfiles ~/.dotfiles
+
+# link the chezmoi ~/.local/share/chezmoi location
+[[ -d ~/.local/share ]] || mkdir -p ~/.local/share
+[[ -L ~/.local/share/chezmoi ]] || ln -sf ~/Development/github.com/segiddins/dotfiles ~/.local/share/chezmoi
+
+echo "setting up Brewfile"
+brew install chezmoi
+chezmoi init
+chezmoi apply ~/.Brewfile

@@ -1,0 +1,33 @@
+# Prevent duplicates in PATH
+typeset -U path
+
+# Set up homebrew paths
+if [[ -z "$BREW_PREFIX" ]]; then
+  export BREW_PREFIX=$([[ "$(arch)" == "arm64" ]] && echo "/opt/homebrew" || echo "/usr/local")
+fi
+path=($BREW_PREFIX/bin $BREW_PREFIX/sbin $path)
+
+export PYENV_ROOT="$HOME/.pyenv"
+
+# Personal and rust bins
+path=($HOME/.bin $HOME/.cargo/bin $HOME/.jenv/bin $PYENV_ROOT/bin $path)
+
+{{ if .abnormal }}
+export SOURCE="$HOME/Development/github.com/abnormal-security/source"
+export VENV="$SOURCE/.venv"
+{{ end }}
+
+export NVM_COMPLETION=true
+export NVM_LAZY_LOAD=true
+
+export EDITOR='mvim -f --nomru -c "au VimLeave * !open -b $__CFBundleIdentifier"'
+export PAGER="less" # page with less not more
+export BROWSER="open" # opens URLs in the default OS X browser
+export LESS="-XRF" # Fix less to not clear screen on exit, show color, exit if < 1 screen
+export MANPAGER="batman"
+export CLICOLOR=true # ls with color
+export RI="-f ansi" # ri with color
+export FZF_DEFAULT_COMMAND="rg --files" # only choose from files rg would search
+
+export GOPATH=$HOME/.go # Keep go's installed files out of the way
+

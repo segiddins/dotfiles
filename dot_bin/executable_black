@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -eu
+
+source "${BREW_PREFIX}/opt/black/libexec/bin/activate"
+exec "${BREW_PREFIX}/opt/black/libexec/bin/black" $@
