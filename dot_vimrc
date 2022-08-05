@@ -1,6 +1,5 @@
 packadd chezmoi.vim
 runtime macros/matchit.vim " Enable matchit for textobj-rubyblock
-"  execute pathogen#infect()
 
 set nocompatible          " We're running Vim, not Vi!
 set laststatus=2          " Always show status at window bottom
