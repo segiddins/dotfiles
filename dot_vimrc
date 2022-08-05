@@ -1,5 +1,6 @@
+packadd chezmoi.vim
 runtime macros/matchit.vim " Enable matchit for textobj-rubyblock
-execute pathogen#infect()
+"  execute pathogen#infect()
 
 set nocompatible          " We're running Vim, not Vi!
 set laststatus=2          " Always show status at window bottom
@@ -58,7 +59,7 @@ if has("gui_running")
   colorscheme made-of-code
 else
   let g:solarized_termtrans = 1
-  colorscheme solarized
+  colorscheme solarized8
 
   " Change cursor shape in different modes
   let &t_EI = "\033[2 q" " NORMAL  █
