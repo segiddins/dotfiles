@@ -14,8 +14,8 @@ chflags nohidden ~/Library
 # Disable holding a key for the special character menu
 defaults write -g ApplePressAndHoldEnabled -bool false
 
-# Make keys repeat really fast
-defaults write -g KeyRepeat -int 0
+# Make keys repeat moderately fast
+defaults write -g KeyRepeat -int 2
 
 # Show external volumes on the desktop
 defaults write com.apple.finder ShowExternalHardDrivesOnDesktop -bool true
