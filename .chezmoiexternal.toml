@@ -28,24 +28,11 @@
   refreshPeriod = "168h"
 
 # 03 vim plugins
+[".vim/autoload/plug.vim"]
+  type = "file"
+  url = "https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim"
+  refreshPeriod = "168h"
 [".vim/colors/made-of-code.vim"]
   type = "file"
   url = "https://raw.githubusercontent.com/indirect/dotfiles/main/dot_vim/colors/made-of-code.vim"
   refreshPeriod = "168h"
-[".vim/pack/plugins/opt/chezmoi.vim"]
-  type = "git-repo"
-  url = "https://github.com/alker0/chezmoi.vim.git"
-  refreshPeriod = "168h"
-
-{{ with $content := include "dot_vim/github_plugins.txt" }}
-{{- with $lines := mustRegexSplit "\n+" $content -1 -}}
-{{- range $lines -}}
-{{- if nospace . -}}
-[".vim/pack/chezmoi/start/{{ with mustRegexSplit "/" . 2  }}{{index . 1}}{{end}}"]
-  type = "git-repo"
-  url = "https://github.com/{{ . }}.git"
-  refreshPeriod = "168h"
-{{ end -}}
-{{- end -}}
-{{- end -}}
-{{- end -}}
