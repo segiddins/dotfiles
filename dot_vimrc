@@ -1,5 +1,64 @@
+call plug#begin()
+" The default plugin directory will be as follows:
+"   - Vim (Linux/macOS): '~/.vim/plugged'
+"   - Vim (Windows): '~/vimfiles/plugged'
+"   - Neovim (Linux/macOS/Windows): stdpath('data') . '/plugged'
+" You can specify a custom plugin directory by passing it as the argument
+"   - e.g. `call plug#begin('~/.vim/plugged')`
+"   - Avoid using standard Vim directory names like 'plugin'
+
+" has to go first :shrug:
+Plug 'alker0/chezmoi.vim'
+
+Plug 'altercation/vim-colors-solarized'
+Plug 'AndrewRadev/splitjoin.vim'
+Plug 'djoshea/vim-autoread'
+Plug 'dyng/ctrlsf.vim'
+Plug 'jremmen/vim-ripgrep'
+Plug 'junegunn/fzf'
+Plug 'junegunn/fzf.vim'
+Plug 'junegunn/vim-easy-align'
+Plug 'kana/vim-textobj-entire'
+Plug 'kana/vim-textobj-line'
+Plug 'kana/vim-textobj-user'
+Plug 'keith/swift.vim'
+Plug 'leafgarland/typescript-vim'
+Plug 'lifepillar/vim-solarized8'
+Plug 'overcache/NeoSolarized'
+Plug 'rhysd/vim-textobj-ruby'
+Plug 'sheerun/vim-polyglot'
+Plug 'terryma/vim-expand-region'
+Plug 'terryma/vim-multiple-cursors'
+Plug 'tonchis/vim-to-github'
+Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-commentary'
+Plug 'tpope/vim-dispatch'
+Plug 'tpope/vim-endwise'
+Plug 'tpope/vim-fugitive'
+Plug 'tpope/vim-projectionist'
+Plug 'tpope/vim-ragtag'
+Plug 'tpope/vim-rails'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-sleuth'
+Plug 'tpope/vim-surround'
+Plug 'tpope/vim-unimpaired'
+Plug 'tpope/vim-vinegar'
+Plug 'vim-airline/vim-airline'
+Plug 'vim-airline/vim-airline-themes'
+Plug 'vitalk/vim-shebang'
+Plug 'w0rp/ale'
+
+" Initialize plugin system
+" - Automatically executes `filetype plugin indent on` and `syntax enable`.
+call plug#end()
+" You can revert the settings after the call like so:
+"   filetype indent off   " Disable file-type-specific indentation
+"   syntax off            " Disable syntax highlighting
+
+call plug#load('chezmoi.vim')
+
+
 runtime macros/matchit.vim " Enable matchit for textobj-rubyblock
-execute pathogen#infect()
 
 set nocompatible          " We're running Vim, not Vi!
 set laststatus=2          " Always show status at window bottom
@@ -54,11 +113,11 @@ endif
 
 if has("gui_running")
   set gcr=a:blinkon0 " Stop blinking the cursor ahhhhh
-  set guifont=Menlo-NF-Regular:h14
+  set guifont=MesloLGS-NF-Regular:h12
   colorscheme made-of-code
 else
   let g:solarized_termtrans = 1
-  colorscheme solarized
+  colorscheme solarized8
 
   " Change cursor shape in different modes
   let &t_EI = "\033[2 q" " NORMAL  █

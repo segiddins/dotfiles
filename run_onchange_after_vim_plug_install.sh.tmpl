@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+set -vx
+
+# {{ include "dot_vimrc" | sha256sum }}
+vim -s <(printf ":PlugInstall --sync\nq:q\n")

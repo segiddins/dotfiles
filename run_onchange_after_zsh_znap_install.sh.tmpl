@@ -1,0 +1,6 @@
+#!/bin/bash
+set -euo pipefail
+set -vx
+
+# {{ include "dot_zshrc.tmpl" | sha256sum }}
+zsh -c ''
