@@ -2,8 +2,3 @@ LICENSE
 README.md
 script
 support
-
-{{- if not .abnormal }}
-.bin/black
-.bin/thrift
-{{- end }}

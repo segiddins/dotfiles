@@ -6,11 +6,6 @@
 
 
 # 00 projects
-{{ if .abnormal }}
-["Development/github.com/abnormal-security/source"]
-  type = "git-repo"
-  url = "https://github.com/abnormal-security/source"
-{{ end }}
 
 
 # 01 unpackaged software

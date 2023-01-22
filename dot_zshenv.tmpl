@@ -12,11 +12,6 @@ export PYENV_ROOT="$HOME/.pyenv"
 # Personal and rust bins
 path=($HOME/.bin $HOME/.cargo/bin $HOME/.jenv/bin $PYENV_ROOT/bin $path)
 
-{{ if .abnormal }}
-export SOURCE="$HOME/Development/github.com/abnormal-security/source"
-export VENV="$SOURCE/.venv"
-{{ end }}
-
 export NVM_COMPLETION=true
 export NVM_LAZY_LOAD=true
 
