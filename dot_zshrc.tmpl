@@ -18,9 +18,11 @@ znap source MichaelAquilina/zsh-you-should-use
 znap source unixorn/fzf-zsh-plugin
 
 znap eval zoxide 'zoxide init zsh'
-znap eval nodenv 'nodenv init -'
+znap eval nodenv 'nodenv init - zsh'
 
 znap source lukechilds/zsh-nvm
+
+znap eval op 'cat ~/.op/plugins.sh'
 
 
 fpath+=~/.zsh/functions
@@ -33,6 +35,8 @@ for file in $packages; do [[ -f $file ]] && source $file; done
 znap-complete kubectl "kubectl completion zsh"
 znap-complete rustup  "rustup  completion zsh"
 znap-complete cargo   "rustup  completion zsh cargo"
+znap-complete op      "op      completion zsh"
+znap-complete microplane "microplane completion zsh"
 
 # Globbing a bit more like bash
 setopt NO_CASE_GLOB
@@ -86,3 +90,4 @@ znap source romkatv/powerlevel10k
 
 znap eval jenv "jenv init -"
 znap eval pyenv-virtualenv "pyenv virtualenv-init -"
+

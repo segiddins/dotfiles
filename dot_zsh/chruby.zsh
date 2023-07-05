@@ -33,5 +33,5 @@ if [[ -f "$BREW_PREFIX/opt/chruby/share/chruby/auto.sh" ]]; then
 fi
 
 # Set up a default ruby version
-export DEFAULT_RUBY_VERSION=$(ls ~/.rubies | tail -n1)
+export DEFAULT_RUBY_VERSION=$(fd '^ruby-[0-9.]+' --base-directory ~/.rubies -d 1 --type directory | sort | tail -n1 | sed -e 's%/$%%')
 chruby $DEFAULT_RUBY_VERSION

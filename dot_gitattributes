@@ -29,8 +29,3 @@
 *.yml.enc diff=rails_credentials
 *.age     diff=age
 
-npm-shrinkwrap.json merge=npm-merge-driver
-package-lock.json   merge=npm-merge-driver
-yarn.lock           merge=yarn-merge-driver
-Gemfile.lock        merge=bundler-merge-driver
-schema.rb           merge=schema-merge-driver
