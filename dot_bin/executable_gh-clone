@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -eu
+
+github="$HOME/Development/github.com"
+
+exec gh repo clone "$1" "$github/$1"

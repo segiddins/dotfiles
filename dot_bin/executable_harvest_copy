@@ -1,0 +1,136 @@
+#!/usr/bin/env ruby
+
+require "rubygems"
+require "bundler/inline"
+gemfile do
+  source "https://rubygems.org"
+  gem "faraday"
+  gem "sawyer"
+  gem "json"
+  gem "activesupport"
+  gem "awesome_print"
+  gem "semantic_logger"
+end
+
+require "active_support/core_ext/hash/keys"
+
+SemanticLogger.add_appender(io: $stdout, formatter: :color)
+
+nerdsniped_access_token = IO.popen(["op", "read", "op://Personal/Harvest -- Nerdsniped LLC/credential"]).read
+nerdsniped_account_id = IO.popen(["op", "read", "op://Personal/Harvest -- Nerdsniped LLC/username"]).read
+
+rubycentral_access_token = IO.popen(["op", "read", "op://Personal/Harvest -- RubyCentral/credential"]).read
+rubycentral_account_id = IO.popen(["op", "read", "op://Personal/Harvest -- RubyCentral/username"]).read
+
+nerdsniped = Faraday.new(
+  url: 'https://api.harvestapp.com',
+  headers: {
+    'Authorization' => "Bearer #{nerdsniped_access_token}",
+    'Harvest-Account-Id' => nerdsniped_account_id.to_s,
+  }
+) do |f|
+  f.response :logger, SemanticLogger["Nerdsniped"], headers: false, errors: true
+  f.response :raise_error
+end
+
+def hash_subset?(a, b)
+  return false unless a.class == b.class
+
+  case a
+  when String, Numeric, TrueClass, FalseClass, NilClass
+    a == b
+  when Hash
+    a.all? do |k, v|
+      hash_subset?(v, b[k])
+    end
+  else
+    raise TypeError, "Unsupported #{a.class}"
+  end
+end
+
+nerdsniped = Sawyer::Agent.new("https://api.harvestapp.com", faraday: nerdsniped, links_parser: Sawyer::LinkParsers::Simple.new)
+
+ruby_central = Faraday.new(
+  url: 'https://api.harvestapp.com',
+  headers: {
+    'Authorization' => "Bearer #{rubycentral_access_token}",
+    'Harvest-Account-Id' => rubycentral_account_id.to_s,
+  }
+) do |f|
+  f.request :json
+  f.response :logger, SemanticLogger["RubyCentral"], headers: false, errors: true
+  f.response :raise_error
+  f.response :json
+end
+
+project_ids = {
+  'RubyGems.org' => 35913100,
+  'RubyGems / Bundler' => 35913125,
+  'On Call Schedule' => 36006643,
+}
+task_ids = {
+  'Project Management' => 20151997,
+  'Programming' => 20151995,
+  'Architecture' => 20151994, # design is close enough, right?
+  'Meetings' => 20152089,
+  'Marketing' => 20152082, # writing
+  'On Call Rotation' => 20201255,
+}
+
+start_date = Date.today - 30
+end_date = Date.today + 1
+
+existing_entries = ruby_central.get('/v2/time_entries', from: start_date.to_s, to: end_date.to_s).body.fetch("time_entries")
+existing_entries.each { |v| v.merge! v.map { |k, v2| ["#{k}_id", v2["id"]] if v2.respond_to?(:key) && v2.key?("id") }.compact.to_h }
+
+start_date.upto(end_date) do |date|
+  next if (existing_entries.any? do |e|
+    e.fetch("spent_date") == date.to_s &&
+      e.fetch("project_id") == project_ids.fetch('On Call Schedule') &&
+      e.fetch("task_id") == task_ids.fetch('On Call Rotation')
+  end)
+
+  ruby_central.post('/v2/time_entries', ({
+    project_id: project_ids.fetch("On Call Schedule"),
+    task_id: task_ids.fetch("On Call Rotation"),
+    spent_date: date.to_s,
+    hours: 6.0,
+  }))
+end
+
+existing_by_reference_id = existing_entries.group_by { _1.fetch("external_reference_id", nil) }
+
+client_id = nerdsniped.call(:get, '/v2/clients').data.clients.find { |c| c.name == 'Ruby Central, Inc.' }.id
+failures = nerdsniped.call(:get, '/v2/time_entries', query: { client_id:, from: start_date.to_s, to: end_date.to_s }).data.time_entries.reverse_each.filter_map do |entry|
+  spent_date = entry.spent_date.strftime("%Y-%m-%d")
+  existing = existing_by_reference_id.fetch(entry.id.to_s, [])
+  entry = {
+    project_id: project_ids.fetch(entry.project.name),
+    task_id: task_ids.fetch(entry.task.name),
+    spent_date:,
+    hours: entry.rounded_hours,
+    notes: entry.notes,
+    external_reference: {
+      id: entry.id.to_s,
+      group_id: "0",
+      account_id: nerdsniped_account_id.to_s,
+      permalink: "https://segiddins.harvestapp.com/reports/detailed?billable=yes&clients=#{client_id}&end_date=#{spent_date}&projects=#{entry.project.id}&start_date=#{entry.spent_date.strftime("%Y-%m-%d")}&tasks=#{entry.task.id}",
+    },
+  }.deep_stringify_keys
+
+  if existing.empty?
+    ruby_central.post('/v2/time_entries', entry)
+  elsif existing.size > 1
+    raise "Duplicate entries for #{entry.id}: #{existing.pretty_inspect}"
+  elsif !hash_subset?(entry, existing[0])
+    ruby_central.patch("/v2/time_entries/#{existing.dig(0, "id")}", entry)
+  end
+  nil
+rescue Faraday::UnprocessableEntityError => e
+  e
+end
+
+failures.each do |f|
+  puts "#{f} (#{f.response.dig(:body, "message")}) for #{f.response[:request][:body]}"
+end
+exit 1 if failures

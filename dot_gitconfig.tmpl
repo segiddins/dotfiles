@@ -7,11 +7,11 @@
 	email = {{ .email }}
 	name = {{ .name }}
 [credential "https://github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !$BREW_PREFIX/bin/gh auth git-credential
 [credential "https://gist.github.com"]
-	helper = 
-	helper = !/opt/homebrew/bin/gh auth git-credential
+	helper =
+	helper = !$BREW_PREFIX/bin/gh auth git-credential
 [push]
 	autoSetupRemote = true
 [branch]
