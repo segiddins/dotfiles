@@ -1,0 +1,264 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'bundler'
+
+require 'bundler/friendly_errors'
+Bundler.with_friendly_errors do
+  require 'bundler/cli'
+
+  # Allow any command to use --help flag to show help for that command
+  help_flags = %w[--help -h]
+  help_flag_used = ARGV.any? {|a| help_flags.include? a }
+  args = help_flag_used ? Bundler::CLI.reformatted_help_args(ARGV) : ARGV
+  
+  Bundler::Thor::THOR_RESERVED_WORDS.delete("run")
+  pc = Bundler::CLI.send :remove_const, :PARSEABLE_COMMANDS
+  Bundler::CLI::PARSEABLE_COMMANDS = (pc + ["run"]).freeze
+  
+  Bundler.ui.level = "silent"
+  
+  module BundleRun
+    class GemfileBuilder
+      def initialize(leading_trivia, injected_deps)
+        @leading_trivia = leading_trivia
+        @injected_deps = injected_deps
+      end
+      def build
+        sections = [
+          @leading_trivia
+        ]
+  
+        sections << Bundler.definition.platforms.map do |p|
+          "platform(#{p.to_s.dump}) {}"
+        end.join("\n")
+        
+        sections << Bundler.definition.send(:sources).global_rubygems_source.remotes.map { %(source #{_1.to_s.dump}) }.join("\n")
+        
+        sections << [
+          "# Composed dependencies",
+          dependencies_to_gemfile(@injected_deps).chomp
+        ].join("\n") unless @injected_deps.empty?
+
+        dependencies = {}
+
+        original_deps_lines = []
+        Bundler.definition.dependencies.group_by(&:groups).each_key(&:sort!).sort_by(&:first).each do |groups, deps|
+          groups = nil if groups.empty? || groups == %i[default]
+          if groups
+            original_deps_lines << "group #{groups.map(&:inspect).join(', ')} do"
+          end
+          
+          deps.sort_by(&:name).each do |d|
+            spec = Bundler.definition.resolve[d.name].first
+            
+            da = []
+            da << "  " if groups
+            da << "gem "
+            da << d.name.dump
+            da << ", #{Gem::Requirement.new(spec.version).as_list.map(&:inspect).join(", ")}"
+            if d.source.nil?
+              case spec.source
+              when nil
+                nil
+              when Bundler::Source::Rubygems
+                da << %(, source: #{spec.source.send(:suppress_configured_credentials, spec.source.remotes.first).to_s.dump}) if spec.source.remotes.size == 1
+              else
+                raise "Unhandled source type #{d.source.inspect}"
+              end
+            else
+              da << ', ' << d.source.options
+              da = ["gemspec"] if d.source.options["gemspec"]
+            end
+            unless d.platforms.empty?
+              da << ', platforms: ' << d.platforms.inspect
+            end
+            if env = d.instance_variable_get(:@env)
+              da << ', env: ' << env.inspect
+            end
+            if req = d.autorequire and !req.empty?
+              req = req.first if req.size == 1
+              da << ', require: ' << req.inspect
+            end
+            
+            original_deps_lines << da.join
+          end
+          
+          if groups
+            original_deps_lines << "end"
+          end
+        end
+        
+        original_deps_lines.insert(0, "# Original deps from gemfile") unless original_deps_lines.empty?
+        
+        sections << original_deps_lines.join("\n")
+        
+        
+        sections << Bundler.definition.resolve.map do |s|
+          next if Bundler.definition.dependencies.any? { _1.name == s.name }
+#         raise "#{s.name} is already in the bundle!" if s.name == gem_name
+          Bundler::Dependency.new(s.name, s.version, 'platform' => s.platform, 'source' => s.source)
+        end.compact.then { "# Deps from Gemfile.lock\n" + dependencies_to_gemfile(_1, 'bundle_run, optional: true') unless _1.empty? }
+        
+        sections.compact.reject { /\A\s*\z/m.match?(_1) }.join("\n\n")
+      end
+      
+      def dependencies_to_gemfile(dependencies, group = nil)
+        gemfile = String.new
+        if dependencies.any?
+          gemfile << "group :#{group} do\n" if group
+          dependencies.each do |dependency|
+            
+            gemfile << "  " if group
+            gemfile << %(gem #{dependency.name.dump})
+            
+            unless dependency.requirement.none?
+              gemfile << ", "
+              gemfile << dependency.requirement.as_list.map(&:inspect).join(", ")
+            end
+            
+            unless dependency.platforms.empty?
+              gemfile << ', platforms: ' << dependency.platforms.inspect
+            end
+            
+            case dependency.source
+            when nil
+              nil
+            when Bundler::Source::Rubygems
+              gemfile << %(, source: #{dependency.source.send(:suppress_configured_credentials, dependency.source.remotes.first).to_s.dump}) if dependency.source.remotes.size == 1
+            else
+              raise "Unhandled source type #{dependency.source.inspect}"
+            end
+            
+            gemfile << "\n"
+          end
+          gemfile << "end\n" if group
+        end
+        gemfile
+      end
+    end
+
+    class CLI < Bundler::Thor::Group
+      (@class_options ||= {}).merge!(Bundler::CLI.class_options)
+
+      argument :gem_name
+      def run
+        Run.new(options:, parent_options:, gem_name:, args:).run
+      end
+      
+      
+      class Run
+        def initialize(options:, parent_options:, gem_name:, args:)
+          @options = options
+          @gem_name = gem_name
+          @args = args
+          @parent_options = parent_options
+        end
+        
+        attr_reader :gem_name
+        
+        def run
+          Bundler.ui.level = "silent" unless @parent_options["verbose"]
+          Bundler.definition.ensure_equivalent_gemfile_and_lockfile
+          
+          path = Bundler.app_config_path.join("bundler-run", gem_name)
+          gemfile = path.join("gems.#{gem_name}.rb")
+          lockfile = path.join("gems.#{gem_name}.rb.lock")
+          comment = "# lockfile:#{Bundler.default_gemfile.relative_path_from(gemfile.dirname)}:#{Bundler::SharedHelpers.digest(:SHA256).hexdigest Bundler.read_file(Bundler.default_lockfile)}"
+          
+          
+          Bundler.mkdir_p path
+
+          
+          
+          lockfile_up_to_date = Bundler::SharedHelpers.filesystem_access(gemfile, :read) do
+            File.read(gemfile, comment.length, external_encoding: "UTF-8") == comment
+          rescue Errno::ENOENT
+            false
+          end
+          
+          Bundler::FileUtils.cp(Bundler.default_lockfile, lockfile) unless lockfile_up_to_date
+          
+          Bundler::SharedHelpers.write_to_gemfile(gemfile,
+            "#{comment}\n\n" +
+            "# eval_gemfile(#{Bundler.default_gemfile.relative_path_from(gemfile.dirname).to_path.dump})\n\n" +
+          Bundler.definition.platforms.map do |p|
+            "platform(#{p.to_s.dump}) {}"
+          end.join("\n") + "\n\n"+
+          Bundler.definition.send(:sources).global_rubygems_source.remotes.map { %(source #{_1.to_s.dump}\n) }.join + "\n" +
+          Bundler.definition.resolve.map do |s|
+            raise "#{s.name} is already in the bundle!" if s.name == gem_name
+            dependencies_to_gemfile [Bundler::Dependency.new(s.name, s.version, 'platform' => s.platform, 'source' => s.source)]
+          end.join +
+            dependencies_to_gemfile([Bundler::Dependency.new(gem_name, nil)]) +
+            
+            "\n\n__END__\n" +
+            GemfileBuilder.new(comment, [Bundler::Dependency.new(gem_name, nil)]).build
+          )
+
+  
+          Bundler.reset!
+          Bundler.with_unbundled_env do
+          ENV.update(
+          { "BUNDLER_VERSION" => Bundler.definition.locked_gems.bundler_version.to_s,
+            "BUNDLE_GEMFILE" => gemfile.to_path,
+            "BUNDLE_AUTO_INSTALL" => "true",
+            "BUNDLE_PATH" => Bundler.settings.path.use_system_gems? ? nil : path.to_path,
+            "BUNDLE_DISABLE_EXEC_LOAD" => "true",
+          })
+
+            Bundler.reset!
+            Bundler.reset_settings_and_root!
+
+            Bundler::CLI.start(["exec", gem_name, *@args], debug: true)
+          end
+        end
+        
+        def dependencies_to_gemfile(dependencies, group = nil)
+          gemfile = String.new
+          if dependencies.any?
+            gemfile << "group :#{group} do\n" if group
+            dependencies.each do |dependency|
+
+              gemfile << "  " if group
+              gemfile << %(gem #{dependency.name.dump})
+
+              unless dependency.requirement.none?
+                gemfile << ", "
+                gemfile << dependency.requirement.as_list.map(&:inspect).join(", ")
+              end
+              
+              unless dependency.platforms.empty?
+                gemfile << ', platforms: ' << dependency.platforms.inspect
+              end
+              
+              case dependency.source
+              when nil
+                nil
+              when Bundler::Source::Rubygems
+                gemfile << %(, source: #{dependency.source.send(:suppress_configured_credentials, dependency.source.remotes.first).to_s.dump}) if dependency.source.remotes.size == 1
+              else
+                raise "Unhandled source type #{dependency.source.inspect}"
+              end
+              
+              gemfile << "\n"
+            end
+            gemfile << "end\n" if group
+          end
+          gemfile
+        end
+        
+      end
+    end
+  end
+  
+  Bundler::CLI.register BundleRun::CLI, :run, "run", "Runs the thing"
+  Bundler::CLI.check_unknown_options[:except] << :run
+  Bundler::CLI.stop_on_unknown_option! :exec
+
+  Bundler::CLI.start %w[run] + args, debug: true
+end
+
+
+
+

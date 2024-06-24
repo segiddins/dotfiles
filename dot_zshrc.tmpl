@@ -16,14 +16,14 @@ znap source zsh-users/zsh-history-substring-search
 znap source scriptingosx/mac-zsh-completions
 znap source MichaelAquilina/zsh-you-should-use
 znap source unixorn/fzf-zsh-plugin
+znap source lukechilds/zsh-nvm
 
 znap eval zoxide 'zoxide init zsh'
 znap eval nodenv 'nodenv init - zsh'
-
-znap source lukechilds/zsh-nvm
-
+znap eval fzf    'cat $BREW_PREFIX/opt/fzf/shell/*.zsh'
+znap eval jenv "jenv init -"
+znap eval pyenv-virtualenv "pyenv virtualenv-init -"
 znap eval op 'cat ~/.op/plugins.sh'
-
 
 fpath+=~/.zsh/functions
 funcs=(~/.zsh/functions/*)
@@ -37,6 +37,7 @@ znap-complete rustup  "rustup  completion zsh"
 znap-complete cargo   "rustup  completion zsh cargo"
 znap-complete op      "op      completion zsh"
 znap-complete microplane "microplane completion zsh"
+znap-complete atuin   "atuin gen-completions --shell zsh"
 
 # Globbing a bit more like bash
 setopt NO_CASE_GLOB
@@ -69,6 +70,9 @@ setopt HIST_VERIFY
 # switch edit mode back to emacs despite EDITOR being vim
 bindkey -e
 
+# for some reason tmux loses forward delete bind
+bindkey "^[[3~" delete-char
+
 # partial completion suggestions
 zstyle ':completion:*' list-suffixes
 zstyle ':completion:*' expand prefix suffix
@@ -84,10 +88,8 @@ zle -N down-line-or-beginning-search
 bindkey "^[[A" up-line-or-beginning-search
 bindkey "^[[B" down-line-or-beginning-search
 
+znap eval atuin  "atuin init zsh"
+
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 znap source romkatv/powerlevel10k
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-znap eval jenv "jenv init -"
-znap eval pyenv-virtualenv "pyenv virtualenv-init -"
-

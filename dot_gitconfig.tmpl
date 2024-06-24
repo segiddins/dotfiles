@@ -62,3 +62,25 @@
 	pr  = "!f() { git fetch -fu ${2:-origin} refs/pull/$1/head:pr/$1 && git checkout pr/$1; }; f"
   sha = log -1 --pretty=format:%H
 	uncommit = reset --soft HEAD^
+	br = "!fbr () {\n\
+	local branches branch\n\
+	branches=$(git for-each-ref --count=30 --sort=-committerdate refs/heads/ --format=\"%(refname:short)\")  && branch=$(echo \"$branches\" |\n\
+	fzf-tmux -d $(( 2 + $(wc -l <<< \"$branches\") )) +m)  && git checkout $(echo \"$branch\" | sed \"s/.* //\" | sed \"s#remotes/[^/]*/##\")\n\
+}; fbr"
+[pull]
+	rebase = true
+[advice]
+	skippedCherryPicks = false
+[branch "main"]
+	pushRemote = NOPE
+
+[maintenance]
+	repo = /Users/segiddins/.zsh/znap/MichaelAquilina/zsh-you-should-use
+	repo = /Users/segiddins/.zsh/znap/lukechilds/zsh-nvm
+	repo = /Users/segiddins/.zsh/znap/romkatv/powerlevel10k
+	repo = /Users/segiddins/.zsh/znap/scriptingosx/mac-zsh-completions
+	repo = /Users/segiddins/.zsh/znap/softmoth/zsh-vim-mode
+	repo = /Users/segiddins/.zsh/znap/unixorn/fzf-zsh-plugin
+	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-autosuggestions
+	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-history-substring-search
+	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-syntax-highlighting

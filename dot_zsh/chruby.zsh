@@ -13,7 +13,7 @@ function reload_chruby {
         reload_chruby
       elif [[ $1 == "install" ]]; then
         shift
-        ruby-install --cleanup --no-reinstall ruby "$@"
+        ruby-install --cleanup --no-reinstall "$@"
         reload_chruby
       else
         original_chruby "$@"
