@@ -12,7 +12,7 @@ def diff(spec:, full_name:, tar:, disk:)
   in_w.sync = true
 
   pid = spawn(
-    "diff", "--color=auto", "--show-c-function", "-A", "patience", "-u", "--label", "tar:#{spec.full_name}:#{full_name}", "-", "--label", "disk:#{spec.full_name}:#{full_name}", disk,
+    "diff", "--color=auto", "--show-c-function", "-u", "--label", "tar:#{spec.full_name}:#{full_name}", "-", "--label", "disk:#{spec.full_name}:#{full_name}", disk,
      {in: in_r}
   )
   wait_thr = Process.detach(pid)
@@ -39,27 +39,27 @@ Bundler.load.specs.each do |spec|
   pkg = Gem::Package.new(spec.cache_file)
   pkg.gem.with_read_io do |io|
     reader = Gem::Package::TarReader.new io
-  
-      reader.each do |entry|
-        next unless entry.full_name == "data.tar.gz"
-        
-        pkg.open_tar_gz entry do |pkg_tar|  
-          seen = Set.new
-          pkg_tar.each do |contents_entry|
-            seen << contents_entry.full_name
-            success = diff(spec:, full_name: contents_entry.full_name, tar: contents_entry, disk: File.join(spec.full_gem_path, contents_entry.full_name)) && success
-          end
-  
-          Find.find(spec.full_gem_path) do |disk|
-            next if FileTest.directory?(disk)
-            full_name = disk.delete_prefix(spec.full_gem_path + '/')
-            next if seen.include?(full_name)
-            success = diff(spec:, full_name: , tar: "", disk:) && success
-          end
+
+    reader.each do |entry|
+      next unless entry.full_name == "data.tar.gz"
+
+      pkg.open_tar_gz entry do |pkg_tar|
+        seen = Set.new
+        pkg_tar.each do |contents_entry|
+          seen << contents_entry.full_name
+          success = diff(spec:, full_name: contents_entry.full_name, tar: contents_entry, disk: File.join(spec.full_gem_path, contents_entry.full_name)) && success
         end
-        
-        break
+
+        Find.find(spec.full_gem_path) do |disk|
+          next if FileTest.directory?(disk)
+          full_name = disk.delete_prefix(spec.full_gem_path + '/')
+          next if seen.include?(full_name)
+          success = diff(spec:, full_name: , tar: "", disk:) && success
+        end
       end
+
+      break
+    end
   end
 end
 

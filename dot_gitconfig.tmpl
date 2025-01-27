@@ -31,6 +31,7 @@
 [diff]
 	algorithm = patience
 	colorMoved = default
+	tool = Kaleidoscope
 [rebase]
 	autoStash = true
 [merge "npm-merge-driver"]
@@ -46,7 +47,7 @@
 	name = automatically merge Rails schema files
 	driver = npx npm-merge-driver merge %A %O %B %P -c 'bin/rake db:migrate'
 [diff "rust"]
-	xfuncname = "^[ \t]*(pub|)[ \t]*((fn|struct|enum|impl|trait|mod)[^;]*)$"
+	xfuncname = "^[ \t]*((pub)?[ \t]*((fn|struct|enum|impl|trait|mod)[^;]*))$"
 [diff "rspec"]
 	xfuncname = "^[ \t]*((RSpec|describe|context|it|before|after|around|feature|scenario|background)[ \t].*)$"
 [diff "plist"]
@@ -73,6 +74,23 @@
 	skippedCherryPicks = false
 [branch "main"]
 	pushRemote = NOPE
+
+[difftool "Kaleidoscope"]
+       cmd = ksdiff --partial-changeset --relative-path \"$MERGED\" -- \"$LOCAL\" \"$REMOTE\"
+[difftool]
+       prompt = false
+       trustExitCode = true
+[merge]
+       tool = Kaleidoscope
+[mergetool "Kaleidoscope"]
+       cmd = ksdiff --merge --output \"$MERGED\" --base \"$BASE\" -- \"$LOCAL\" --snapshot \"$REMOTE\" --snapshot
+       trustExitCode = true
+[mergetool]
+       prompt = false
+[http]
+       postBuffer = 1048576000
+       lowSpeedLimit = 0
+       lowSpeedTime = 999999
 
 [maintenance]
 	repo = /Users/segiddins/.zsh/znap/MichaelAquilina/zsh-you-should-use
