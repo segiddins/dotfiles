@@ -19,11 +19,8 @@ znap source unixorn/fzf-zsh-plugin
 znap source lukechilds/zsh-nvm
 
 znap eval zoxide 'zoxide init zsh'
-znap eval nodenv 'nodenv init - zsh'
 znap eval fzf    'cat $BREW_PREFIX/opt/fzf/shell/*.zsh'
-znap eval jenv "jenv init -"
-znap eval pyenv-virtualenv "pyenv virtualenv-init -"
-znap eval op 'cat ~/.op/plugins.sh'
+znap eval op     'cat $HOME/.config/op/plugins.sh'
 
 fpath+=~/.zsh/functions
 funcs=(~/.zsh/functions/*)
