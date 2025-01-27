@@ -2,3 +2,5 @@ LICENSE
 README.md
 script
 support
+{{ if stat (joinPath .chezmoi.homeDir ".zsh/znap") }}.zsh/znap{{ end }}
+.zsh/**/*.zwc
