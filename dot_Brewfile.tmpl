@@ -123,3 +123,13 @@ brew "keith/formulae/git-pile"
 
 tap "shopify/shopify"
 brew "shopify/shopify/ejson"
+
+{{- if .server }}
+# Server-specific
+brew "caddy"
+tap "indirect/tap"
+brew "indirect/tap/cronitor"
+
+cask "homebrew/cask-drivers/fujitsu-scansnap-home"
+cask "plex-media-server"
+{{- end }}

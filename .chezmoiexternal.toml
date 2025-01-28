@@ -13,6 +13,12 @@
   type = "git-repo"
   url = "https://github.com/bigH/git-fuzzy"
   refreshPeriod = "168h"
+{{ if .server }}
+[".bin/tailscale-nginx-auth"]
+  type = "file"
+  url = "https://github.com/indirect/dotfiles/releases/download/nginx-auth-1-4f6fa3d6/nginx-auth"
+  executable = true
+{{ end }}
 
 # 02 zsh plugins
 [".zsh/znap/zsh-snap"]
