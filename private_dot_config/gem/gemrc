@@ -1,0 +1,6 @@
+---
+:backtrace: "true"
+:bulk_threshold: "1000"
+:update_sources: "true"
+:verbose: "true"
+:concurrent_downloads: "12"

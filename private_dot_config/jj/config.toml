@@ -1,0 +1,178 @@
+"$schema" = "https://jj-vcs.github.io/jj/latest/config-schema.json"
+
+[aliases]
+# Convenient shorthands.
+d = ["diff"]
+s = ["status"]
+l = ["log", "-r", "(trunk()..@):: | (trunk()..@)-"]
+ll = ["log", "-T", "builtin_log_detailed"]
+name = ["bookmark", "set", "-r", "closest_pushable(@)"]
+init = ["util", "exec", "--", "bash", "-c", """
+jj git init --colocate
+# only track origin branches, not upstream or others
+jj bookmark track 'glob:*@origin'
+"""]
+push = [
+  "util",
+  "exec",
+  "--",
+  "bash",
+  "-c",
+  """
+# tug the closest bookmark, push it, and track it
+pushable="$(jj log -r 'closest_pushable(@)' -T '"n"')"
+[[ -n "$pushable" ]] && (jj tug && jj git push) || echo "Nothing changed."
+closest="$(jj log -r 'closest_bookmark(@)' -n 1 -T 'bookmarks' --no-graph | cut -d ' ' -f 1)"
+closest="${closest%\\*}"
+tracked="$(jj bookmark list -r ${closest} -t -T 'if(remote, name)')"
+[[ $tracked == $closest ]] || jj bookmark track "${closest}@origin"
+""",
+]
+fetch = ["git", "fetch"]
+pull = [
+  "util",
+  "exec",
+  "--",
+  "bash",
+  "-c",
+  """
+# update from remote and rebase onto the latest
+closest="$(jj log -r 'closest_bookmark(@)' -n 1 -T 'bookmarks' --no-graph | cut -d ' ' -f 1)"
+closest="${closest%\\*}"
+jj git fetch
+jj log -n 1 -r "${closest}" 2>&1 > /dev/null && jj rebase -d "${closest}" || jj rebase -d 'trunk()'
+jj log -r 'stack()'
+""",
+]
+
+# print the number of commits in a revset
+count = ["util", "exec", "--", "bash", "-c", """
+set -eo pipefail
+jj log --no-graph -r "$@ & (~empty() | merges())" -T '"n"' | wc -c | tr -d ' '
+""", ""]
+
+# Get all open stacks of work.
+open = ["log", "-r", "open()"]
+
+# Show the current stack
+stack = ["log", "-r", "stack()"]
+
+# Better name, IMO.
+credit = ["file", "annotate"]
+
+# Retrunk a series. Typically used as `jj retrunk -s ...`, and notably can be
+# used with open:
+# - jj retrunk -s 'all:roots(open())'
+retrunk = ["rebase", "-d", "trunk()"]
+
+# Retrunk the current stack of work.
+reheat = ["rebase", "-d", "trunk()", "-s", "all:roots(trunk()..stack(@))"]
+
+# Eject content from @ into any other change.
+# - jj eject xyz --interactive
+eject = ["squash", "--from", "@", "--into"]
+
+# Take content from any change, and move it into @.
+# - jj consume xyz path/to/file`
+consume = ["squash", "--into", "@", "--from"]
+
+# Bring the closest bookmark up to the closest pushable change
+tug = ["util", "exec", "--", "sh", "-c", """
+if [ "x$1" = "x" ]; then
+  jj bookmark move --from "closest_bookmark(@)" --to "closest_pushable(@)"
+else
+  jj bookmark move --to "closest_pushable(@)" "$@"
+fi
+""", ""]
+
+# list or jump to bookmarks
+b = [
+  "util",
+  "exec",
+  "--",
+  "sh",
+  "-c",
+  """
+if [ "x$1" = "x" ]; then
+  jj bookmark list
+else
+  jj bookmark list -a -T 'separate("@", name, remote) ++ "\n"' 2> /dev/null | sort | uniq | fzf -f "$1" | head -n1 | xargs jj new
+fi
+""",
+  "",
+]
+ba = ["bookmark", "list", "--all-remotes"]
+bo = ["bookmark", "list", "--remote", "origin"]
+
+
+[revset-aliases]
+'closest_bookmark(to)' = 'heads(::to & bookmarks())'
+'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
+
+'user(x)' = 'author(x) | committer(x)'
+
+# Private and WIP commits that should never be pushed anywhere.
+'wip()' = 'description(glob:"wip:*")'
+'private()' = 'description(glob:"private:*")'
+'unready()' = 'wip() | private()'
+
+# stack(x, n) is the set of mutable commits reachable from 'x', with 'n'
+# parents. 'n' is often useful to customize the display and return set for
+# certain operations. 'x' can be used to target the set of 'roots' to traverse,
+# e.g. @ is the current stack.
+'stack()' = 'ancestors(reachable(@, mutable()), 2)'
+'stack(x)' = 'ancestors(reachable(x, mutable()), 2)'
+'stack(x, n)' = 'ancestors(reachable(x, mutable()), n)'
+
+# The current set of "open" works. It is defined as:
+#
+# - given the set of commits not in trunk, that are written by me,
+# - calculate the given stack() for each of those commits
+#
+# n = 1, meaning that nothing from `trunk()` is included, so all resulting
+# commits are mutable by definition.
+'open()' = 'stack(trunk().. & mine(), 1)'
+
+# the set of 'ready()' commits. defined as the set of open commits, but nothing
+# that is blacklisted or any of their children.
+'ready()' = 'open() ~ unready()::'
+
+[git]
+push-new-bookmarks = true
+
+[[--scope]]
+--when.commands = ["diff", "show"]
+
+[--scope.ui]
+# https://github.com/jj-vcs/jj/blob/v0.25.0/docs/config.md#processing-contents-to-be-paged
+pager = "delta"
+# NOTE: this is required when using `delta` as a pager
+diff-formatter = ":git"
+
+[user]
+name = "Samuel Giddins"
+email = "segiddins@segiddins.me"
+
+[ui]
+editor = [
+  "mvim",
+  "-f",
+  "--nomru",
+  "-c",
+  "au VimLeave * !open -b $__CFBundleIdentifier",
+]
+diff-editor = ":builtin"
+merge-editor = ":builtin"
+
+[templates]
+draft_commit_description = '''
+  concat(
+    coalesce(description, default_commit_description, "\n"),
+    surround(
+      "\nJJ: This commit contains the following changes:\n", "",
+      indent("JJ:     ", diff.stat(72)),
+    ),
+    "\nJJ: ignore-rest\n",
+    diff.git(),
+  )
+'''

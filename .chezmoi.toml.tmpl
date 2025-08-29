@@ -1,0 +1,11 @@
+encryption = "age"
+[age]
+    identity = "{{ .chezmoi.homeDir }}/.config/age/chezmoi_key.txt"
+    recipient = "age10tgt9vtdnnekd4ex0cgj4gtts05leps2wu78a08pkqyjlmrgkcdqmh3m26"
+[diff]
+    exclude = ["scripts"]
+    format = "git"
+    pager = "delta"
+[edit]
+    command = "code"
+    args = ["-w"]

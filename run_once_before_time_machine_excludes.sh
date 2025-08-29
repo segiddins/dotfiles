@@ -9,7 +9,7 @@ sudo tmutil addexclusion -p \
   "$HOME/Library/Application Support/Steam/steamapps"
 
 # skip backup on node_modules, bundled gems and rails assets
-pathnames=(~/src/*/*/{.bundle/ruby,node_modules})
+pathnames=(~/Development/*/*/*/{.bundle/ruby,node_modules,target,__pycache__})
 if (find "$pathnames" 2>&1 1>/dev/null); then
   for pathname in $pathnames; do
     sudo tmutil addexclusion "$pathname"

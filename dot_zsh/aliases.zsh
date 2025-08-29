@@ -3,7 +3,7 @@ alias less=bat
 alias man=batman
 
 alias l="eza --icons"
-alias la="eza -lahF --git --icons"
+alias la="eza -lah --classify=auto --icons --git"
 alias ll="eza -ll --git --icons"
 alias lt="eza -T"
 

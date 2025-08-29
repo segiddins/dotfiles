@@ -8,10 +8,10 @@
 	name = {{ .name }}
 [credential "https://github.com"]
 	helper =
-	helper = !$BREW_PREFIX/bin/gh auth git-credential
+	helper = !/opt/homebrew/bin/gh auth git-credential
 [credential "https://gist.github.com"]
 	helper =
-	helper = !$BREW_PREFIX/bin/gh auth git-credential
+	helper = !/opt/homebrew/bin/gh auth git-credential
 [push]
 	autoSetupRemote = true
 [branch]
@@ -102,3 +102,16 @@
 	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-autosuggestions
 	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-history-substring-search
 	repo = /Users/segiddins/.zsh/znap/zsh-users/zsh-syntax-highlighting
+
+[delta "light-mode"]
+	light = true
+	syntax-theme = GitHub
+[delta "dark-mode"]
+	light = false
+	syntax-theme = Visual Studio Dark+
+[delta]
+	navigate = true
+
+[interactive]
+	diffFilter = delta --color-only --features "$(defaults read -globalDomain AppleInterfaceStyle &> /dev/null && echo dark-mode || echo light-mode)"
+

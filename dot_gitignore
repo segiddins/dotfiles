@@ -15,3 +15,5 @@ tags
 .idea
 .bundle
 hammerspoon/Spoons/*
+.claude
+.scratch

@@ -4,8 +4,3 @@ script
 support
 {{ if stat (joinPath .chezmoi.homeDir ".zsh/znap") }}.zsh/znap{{ end }}
 .zsh/**/*.zwc
-
-{{ if not .server }}
-private_Library/LaunchAgents/me.segiddins.caddy.plist.tmpl
-private_Library/LaunchAgents/me.segiddins.tailscale-nginx-auth.plist.tmpl
-{{ end }}

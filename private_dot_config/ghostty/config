@@ -1,0 +1,9 @@
+clipboard-paste-protection = false
+clipboard-read = allow
+clipboard-write = allow
+
+clipboard-trim-trailing-spaces = true
+
+keybind = alt+left=esc:b
+keybind = alt+right=esc:f
+keybind = shift+enter=text:\n

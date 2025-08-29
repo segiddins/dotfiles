@@ -15,12 +15,23 @@ znap source softmoth/zsh-vim-mode
 znap source zsh-users/zsh-history-substring-search
 znap source scriptingosx/mac-zsh-completions
 znap source MichaelAquilina/zsh-you-should-use
-znap source unixorn/fzf-zsh-plugin
+# znap source unixorn/fzf-zsh-plugin
 znap source lukechilds/zsh-nvm
+znap source mafredri/zsh-async
+
+if [[ -n $GHOSTTY_RESOURCES_DIR ]]; then
+  znap eval ghostty 'cat "$GHOSTTY_RESOURCES_DIR"/shell-integration/zsh/ghostty-integration'
+fi
+
+# switch edit mode back to emacs despite EDITOR being vim
+# this has to come before the znap evals so it can be partially overwritten
+bindkey -e
 
 znap eval zoxide 'zoxide init zsh'
-znap eval fzf    'cat $BREW_PREFIX/opt/fzf/shell/*.zsh'
+znap eval fzf    'fzf --zsh'
 znap eval op     'cat $HOME/.config/op/plugins.sh'
+znap eval atuin  "atuin init zsh"
+znap eval rv     "/Users/segiddins/.cargo/bin/rv shell init zsh"
 
 fpath+=~/.zsh/functions
 funcs=(~/.zsh/functions/*)
@@ -30,11 +41,13 @@ packages=(~/.zsh/*.zsh)
 for file in $packages; do [[ -f $file ]] && source $file; done
 
 znap-complete kubectl "kubectl completion zsh"
-znap-complete rustup  "rustup  completion zsh"
-znap-complete cargo   "rustup  completion zsh cargo"
+znap-complete rustup  "rustup  completions zsh"
+znap-complete cargo   "rustup  completions zsh cargo"
 znap-complete op      "op      completion zsh"
 znap-complete microplane "microplane completion zsh"
 znap-complete atuin   "atuin gen-completions --shell zsh"
+znap-complete jj      'jj util completion zsh'
+
 
 # Globbing a bit more like bash
 setopt NO_CASE_GLOB
@@ -57,15 +70,12 @@ setopt INC_APPEND_HISTORY
 setopt HIST_FIND_NO_DUPS
 setopt HIST_REDUCE_BLANKS
 setopt HIST_IGNORE_SPACE
+# Show substitutions before running them
+setopt HIST_VERIFY
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND=true
 
 # Break words on forward slash, so delete-word stops on directories
 WORDCHARS=${WORDCHARS/\/}
-
-# Show substitutions before running them
-setopt HIST_VERIFY
-
-# switch edit mode back to emacs despite EDITOR being vim
-bindkey -e
 
 # for some reason tmux loses forward delete bind
 bindkey "^[[3~" delete-char
@@ -84,8 +94,6 @@ zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 bindkey "^[[A" up-line-or-beginning-search
 bindkey "^[[B" down-line-or-beginning-search
-
-znap eval atuin  "atuin init zsh"
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 znap source romkatv/powerlevel10k

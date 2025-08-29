@@ -3,5 +3,7 @@
 set -eu
 
 github="$HOME/Development/github.com"
+repo="$1"
 
-exec gh repo clone "$1" "$github/$1"
+gh repo clone "$repo" "$github/$repo"
+zoxide add "$github/$repo"
