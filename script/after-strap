@@ -11,10 +11,5 @@ echo "getting dotfiles key from 1Password"
 mkdir -p ~/.config/age
 chezmoi apply ~/.config/age/chezmoi_key.txt
 
-echo "installing Xcode..."
-brew install xcodes
-xcodes install --latest
-sudo xcodebuild -license accept
-
 echo "setting up all other dotfiles..."
 chezmoi apply
