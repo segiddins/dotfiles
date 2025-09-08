@@ -12,8 +12,8 @@ mkdir -p ~/.config/age
 chezmoi apply ~/.config/age/chezmoi_key.txt
 
 echo "installing Xcode..."
-brew install mas
-mas install 497799835
+brew install xcodes
+xcodes install --latest
 sudo xcodebuild -license accept
 
 echo "setting up all other dotfiles..."
