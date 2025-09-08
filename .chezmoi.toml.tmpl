@@ -1,7 +1,15 @@
+{{- $email := promptStringOnce . "email" "Email address" -}}
+{{- $personal := promptBoolOnce . "personal" "Is this a personal machine?" -}}
+{{- $server := promptBoolOnce . "server" "Is this your personal server?" -}}
+
 encryption = "age"
 [age]
     identity = "{{ .chezmoi.homeDir }}/.config/age/chezmoi_key.txt"
     recipient = "age10tgt9vtdnnekd4ex0cgj4gtts05leps2wu78a08pkqyjlmrgkcdqmh3m26"
+[data]
+    email = {{ $email | quote }}
+    personal = {{ $personal }}
+    server = {{ $server }}
 [diff]
     exclude = ["scripts"]
     format = "git"
