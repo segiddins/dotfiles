@@ -7,3 +7,4 @@ repo="$1"
 
 gh repo clone "$repo" "$github/$repo"
 zoxide add "$github/$repo"
+jj git init --colocate "$github/$repo"

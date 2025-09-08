@@ -1,6 +1,0 @@
-#!/bin/bash
-set -euo pipefail
-set -vx
-
-# {{ include "dot_Brewfile.mas.tmpl" | sha256sum }}
-brew bundle install --file ~/.Brewfile.mas
