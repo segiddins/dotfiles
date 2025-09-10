@@ -5,6 +5,6 @@ support
 {{ if stat (joinPath .chezmoi.homeDir ".zsh/znap") }}.zsh/znap{{ end }}
 {{ if not .personal }}
 Downloads
-run_once_before_move_downloads.sh
+move_downloads.sh
 {{ end }}
 .zsh/**/*.zwc
