@@ -31,6 +31,8 @@ znap eval zoxide 'zoxide init zsh'
 znap eval fzf    'fzf --zsh'
 znap eval op     'cat $HOME/.config/op/plugins.sh'
 znap eval atuin  "atuin init zsh"
+znap eval gcloud-path       'cat $BREW_PREFIX/share/google-cloud-sdk/path.zsh.inc'
+znap eval gcloud-completion 'cat $BREW_PREFIX/share/google-cloud-sdk/completion.zsh.inc'
 znap eval rv     "/Users/segiddins/.cargo/bin/rv shell init zsh"
 
 fpath+=~/.zsh/functions
@@ -47,6 +49,7 @@ znap-complete op      "op      completion zsh"
 znap-complete microplane "microplane completion zsh"
 znap-complete atuin   "atuin gen-completions --shell zsh"
 znap-complete jj      'jj util completion zsh'
+znap-complete hugo    'hugo completion zsh'
 
 
 # Globbing a bit more like bash

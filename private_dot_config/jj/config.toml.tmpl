@@ -107,7 +107,8 @@ bo = ["bookmark", "list", "--remote", "origin"]
 
 [revset-aliases]
 'closest_bookmark(to)' = 'heads(::to & bookmarks())'
-'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()))'
+'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()) & ~unready())'
+
 
 'user(x)' = 'author(x) | committer(x)'
 
@@ -137,8 +138,9 @@ bo = ["bookmark", "list", "--remote", "origin"]
 # that is blacklisted or any of their children.
 'ready()' = 'open() ~ unready()::'
 
-[git]
-push-new-bookmarks = true
+[remotes.origin]
+# Only auto-track master and your own branches to avoid conflicts from other people's branches
+auto-track-bookmarks = 'glob:master|glob:segiddins/*'
 
 [[--scope]]
 --when.commands = ["diff", "show"]
@@ -165,6 +167,12 @@ diff-editor = ":builtin"
 merge-editor = ":builtin"
 
 [templates]
+# Default commit message template matching Persona's format
+# Valid commit types: build, chore, ci, docs, feat, fix, perf, refactor, revert, style, test
+default_commit_description = '''<type>: <description>
+
+'''
+
 draft_commit_description = '''
   concat(
     coalesce(description, default_commit_description, "\n"),
