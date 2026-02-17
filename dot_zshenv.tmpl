@@ -2,17 +2,28 @@
 typeset -U path
 
 # Set up homebrew paths
+{{ if eq .chezmoi.os "darwin" -}}
 if [[ -z "$BREW_PREFIX" ]]; then
   export BREW_PREFIX=$([[ "$(arch)" == "arm64" ]] && echo "/opt/homebrew" || echo "/usr/local")
 fi
-path=($BREW_PREFIX/bin $BREW_PREFIX/sbin $path)
+{{ else -}}
+if [[ -z "$BREW_PREFIX" ]] && [[ -d /home/linuxbrew/.linuxbrew ]]; then
+  export BREW_PREFIX="/home/linuxbrew/.linuxbrew"
+fi
+{{ end -}}
+[[ -n "$BREW_PREFIX" ]] && path=($BREW_PREFIX/bin $BREW_PREFIX/sbin $path)
 
 # Personal and rust bins
 path=($HOME/.bin $HOME/.cargo/bin $HOME/.local/bin $path)
 
+{{ if eq .chezmoi.os "darwin" -}}
 export EDITOR='mvim -f --nomru -c "au VimLeave * !open -b $__CFBundleIdentifier"'
+export BROWSER="open"
+{{ else -}}
+export EDITOR='vim'
+export BROWSER="${BROWSER:-xdg-open}"
+{{ end -}}
 export PAGER="less" # page with less not more
-export BROWSER="open" # opens URLs in the default OS X browser
 export LESS="-XRF" # Fix less to not clear screen on exit, show color, exit if < 1 screen
 export CLICOLOR=true # ls with color
 export RI="-f ansi" # ri with color

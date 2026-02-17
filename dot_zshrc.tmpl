@@ -13,7 +13,9 @@ znap source zsh-users/zsh-autosuggestions
 znap source zsh-users/zsh-syntax-highlighting
 znap source softmoth/zsh-vim-mode
 znap source zsh-users/zsh-history-substring-search
+{{ if eq .chezmoi.os "darwin" -}}
 znap source scriptingosx/mac-zsh-completions
+{{ end -}}
 znap source MichaelAquilina/zsh-you-should-use
 # znap source unixorn/fzf-zsh-plugin
 znap source lukechilds/zsh-nvm
@@ -31,9 +33,11 @@ znap eval zoxide 'zoxide init zsh'
 znap eval fzf    'fzf --zsh'
 znap eval op     'cat $HOME/.config/op/plugins.sh'
 znap eval atuin  "atuin init zsh"
+{{ if eq .chezmoi.os "darwin" -}}
 znap eval gcloud-path       'cat $BREW_PREFIX/share/google-cloud-sdk/path.zsh.inc'
 znap eval gcloud-completion 'cat $BREW_PREFIX/share/google-cloud-sdk/completion.zsh.inc'
-znap eval rv     "/Users/segiddins/.cargo/bin/rv shell init zsh"
+{{ end -}}
+znap eval rv     "{{ .chezmoi.homeDir }}/.cargo/bin/rv shell init zsh"
 
 fpath+=~/.zsh/functions
 funcs=(~/.zsh/functions/*)

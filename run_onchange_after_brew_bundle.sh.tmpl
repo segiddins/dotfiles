@@ -3,4 +3,13 @@ set -euo pipefail
 set -vx
 
 # {{ include "dot_Brewfile.tmpl" | sha256sum }}
+
+{{ if ne .chezmoi.os "darwin" -}}
+# Install Linuxbrew if not present
+if ! command -v brew &>/dev/null; then
+  NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+fi
+{{ end -}}
+
 brew bundle check --global || brew bundle install --global

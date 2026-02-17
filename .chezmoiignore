@@ -1,11 +1,24 @@
 CLAUDE.md
+Dockerfile
 LICENSE
 README.md
+install.sh
 script
 support
 {{ if stat (joinPath .chezmoi.homeDir ".zsh/znap") }}.zsh/znap{{ end }}
 {{ if not .personal }}
 Downloads
 move_downloads.sh
+.config/age/chezmoi_key.txt
+.kube/rubygems.config.age
+.local/share/atuin/key.age
+.config/ngrok/ngrok.yml.age
+.ssh/known_hosts.age
+{{ end }}
+{{ if ne .chezmoi.os "darwin" }}
+sudo_pam_touchid.sh
+macos_settings.sh
+move_downloads.sh
+Downloads
 {{ end }}
 .zsh/**/*.zwc

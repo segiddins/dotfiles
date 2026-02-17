@@ -156,6 +156,7 @@ name = "Samuel Giddins"
 email = {{ .email | quote }}
 
 [ui]
+{{ if eq .chezmoi.os "darwin" -}}
 editor = [
   "mvim",
   "-f",
@@ -163,6 +164,9 @@ editor = [
   "-c",
   "au VimLeave * !open -b $__CFBundleIdentifier",
 ]
+{{ else -}}
+editor = "vim"
+{{ end -}}
 diff-editor = ":builtin"
 merge-editor = ":builtin"
 

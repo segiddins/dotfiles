@@ -1,11 +1,21 @@
-{{- $email := promptStringOnce . "email" "Email address" -}}
-{{- $personal := promptBoolOnce . "personal" "Is this a personal machine?" -}}
-{{- $server := promptBoolOnce . "server" "Is this your personal server?" -}}
+{{- $coder := ne (env "CODER") "" -}}
+{{- $email := "" -}}
+{{- $personal := false -}}
+{{- $server := false -}}
+{{- if $coder -}}
+{{-   $email = coalesce (env "CODER_EMAIL") "coder@example.com" -}}
+{{- else -}}
+{{-   $email = promptStringOnce . "email" "Email address" -}}
+{{-   $personal = promptBoolOnce . "personal" "Is this a personal machine?" -}}
+{{-   $server = promptBoolOnce . "server" "Is this your personal server?" -}}
+{{- end -}}
 
+{{ if $personal -}}
 encryption = "age"
 [age]
     identity = "{{ .chezmoi.homeDir }}/.config/age/chezmoi_key.txt"
     recipient = "age10tgt9vtdnnekd4ex0cgj4gtts05leps2wu78a08pkqyjlmrgkcdqmh3m26"
+{{ end -}}
 [data]
     email = {{ $email | quote }}
     personal = {{ $personal }}
