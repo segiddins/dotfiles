@@ -30,3 +30,8 @@ export RI="-f ansi" # ri with color
 export FZF_DEFAULT_COMMAND="rg --files" # only choose from files rg would search
 
 export GOPATH=$HOME/.go # Keep go's installed files out of the way
+
+{{ if eq .email "samuel.giddins@withpersona.com" -}}
+# Point rv at asdf-installed rubies on the Persona machine
+export RUBIES_PATH=$HOME/.asdf/installs/ruby
+{{ end -}}

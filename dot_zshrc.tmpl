@@ -37,7 +37,7 @@ znap eval atuin  "atuin init zsh"
 znap eval gcloud-path       'cat $BREW_PREFIX/share/google-cloud-sdk/path.zsh.inc'
 znap eval gcloud-completion 'cat $BREW_PREFIX/share/google-cloud-sdk/completion.zsh.inc'
 {{ end -}}
-znap eval rv     "{{ .chezmoi.homeDir }}/.cargo/bin/rv shell init zsh"
+znap eval rv     "rv shell init zsh"
 
 fpath+=~/.zsh/functions
 funcs=(~/.zsh/functions/*)
