@@ -34,4 +34,5 @@ export GOPATH=$HOME/.go # Keep go's installed files out of the way
 {{ if eq .email "samuel.giddins@withpersona.com" -}}
 # Point rv at asdf-installed rubies on the Persona machine
 export RUBIES_PATH=$HOME/.asdf/installs/ruby
+path=(/usr/local/go/bin $path)
 {{ end -}}
