@@ -14,7 +14,7 @@ fi
 [[ -n "$BREW_PREFIX" ]] && path=($BREW_PREFIX/bin $BREW_PREFIX/sbin $path)
 
 # Personal and rust bins
-path=($HOME/.bin $HOME/.cargo/bin $HOME/.local/bin $path)
+path=($HOME/.bin $HOME/.cargo/bin $HOME/.go/bin $HOME/.local/bin $path)
 
 {{ if eq .chezmoi.os "darwin" -}}
 export EDITOR='mvim -f --nomru -c "au VimLeave * !open -b $__CFBundleIdentifier"'
