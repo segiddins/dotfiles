@@ -181,7 +181,18 @@ diff-formatter = ":git"
 
 [user]
 name = "Samuel Giddins"
-email = {{ .email | quote }}
+email = "segiddins@segiddins.me"
+
+# Use Persona email in any ~/Development/github.com/persona-* repo.
+# jj's --when.repositories matches absolute path prefixes by whole components
+# (no glob), so the persona-* directories are enumerated at chezmoi-apply time.
+{{ range (glob (joinPath .chezmoi.homeDir "Development/github.com/persona-*")) -}}
+[[--scope]]
+--when.repositories = [{{ . | quote }}]
+[--scope.user]
+email = "samuel.giddins@withpersona.com"
+
+{{ end -}}
 
 [ui]
 {{ if eq .chezmoi.os "darwin" -}}
