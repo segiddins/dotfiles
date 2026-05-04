@@ -104,10 +104,38 @@ fi
 ba = ["bookmark", "list", "--all-remotes"]
 bo = ["bookmark", "list", "--remote", "origin"]
 
+# diff rev against fork point like GitHub PR diff or git ...
+# dt/dts exclude lock files and openapi schemas; dta/dtas show all files
+dt = ["util", "exec", "--", "zsh", "-c", '''
+  jj diff --from "fork_point(trunk() | ${1:-@})" --to "${1:-@}" \
+    '~glob:"**/package-lock.json" & ~glob:"**/Cargo.lock" & ~glob:"**/openapi/**" & ~glob:"**/deno.lock" & ~glob:"**/bun.lock"'
+  ''', 'jj dt']
+dts = ["util", "exec", "--", "zsh", "-c", '''
+  jj diff --stat --from "fork_point(trunk() | ${1:-@})" --to "${1:-@}" \
+    '~glob:"**/package-lock.json" & ~glob:"**/Cargo.lock" & ~glob:"**/openapi/**" & ~glob:"**/deno.lock" & ~glob:"**/bun.lock"'
+  ''', 'jj dts']
+dta = ["util", "exec", "--", "zsh", "-c", '''
+  jj diff --from "fork_point(trunk() | ${1:-@})" --to "${1:-@}"
+  ''', 'jj dta']
+dtsa = ["util", "exec", "--", "zsh", "-c", '''
+  jj diff --stat --from "fork_point(trunk() | ${1:-@})" --to "${1:-@}"
+  ''', 'jj dtsa']
+rp = ["log", "--no-graph", "-T", "commit_id"]
+ds = ["diff", "--stat"]
+
+# jj collapse START [END]
+# squash START::END into START. second arg optional; if omitted, all descendants of START
+collapse = ["util", "exec", "--", "zsh", "-c", '''
+  jj squash -f "$1"::"$2" -t "$1"
+  ''', 'jj collapse']
+
 
 [revset-aliases]
 'closest_bookmark(to)' = 'heads(::to & bookmarks())'
 'closest_pushable(to)' = 'heads(::to & mutable() & ~description(exact:"") & (~empty() | merges()) & ~unready())'
+
+'fork(x)' = 'fork_point(trunk() | x)'
+'fork()' = 'fork_point(trunk() | @)'
 
 
 'user(x)' = 'author(x) | committer(x)'
