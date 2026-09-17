@@ -21,4 +21,24 @@ macos_settings.sh
 move_downloads.sh
 Downloads
 {{ end }}
+{{ if env "GOOGLE_CLOUD_WORKSTATIONS" }}
+# Ephemeral Persona cloud workstation: skip heavy toolchain installs and
+# personal/mac-only config that doesn't belong on a work box.
+.Brewfile
+brew_bundle.sh
+rustup_install.sh
+.aws
+.kube
+.rubies
+.ssh
+.config/karabiner
+.config/ngrok
+.config/wxchordpro
+.config/atuin
+.local/share/atuin
+# the tracked file has no oauth_token (real token normally lives in the
+# macOS Keychain), so managing it here would reset `gh auth login` on
+# every chezmoi apply
+.config/gh/hosts.yml
+{{ end }}
 .zsh/**/*.zwc
